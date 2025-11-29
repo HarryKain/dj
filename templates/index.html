@@ -12,115 +12,127 @@
 </head>
 <body>
     <header>
-        <h1>Party‑Musikwünsche</h1>
+        <div class="brand">
+            <h1>Party‑Musikwünsche</h1>
+            <p class="tagline">Schnell auf dem Smartphone checken und voten</p>
+        </div>
         <nav>
             {% if dj_logged_in %}
                 <form method="post" action="{{ url_for('logout') }}" style="display:inline;">
                     <button type="submit">DJ abmelden</button>
                 </form>
             {% else %}
-                <a href="{{ url_for('login') }}">DJ‑Login</a>
+                <a class="ghost" href="{{ url_for('login') }}">DJ‑Login</a>
             {% endif %}
         </nav>
     </header>
 
-    <!-- Flash‑Nachrichten anzeigen -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <ul class="flash-messages">
-          {% for category, message in messages %}
-            <li class="{{ category }}">{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
+    <main class="page">
+        <!-- Flash‑Nachrichten anzeigen -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class="flash-messages">
+              {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
 
-    <section id="add-song">
-        <h2>Neuen Song hinzufügen</h2>
-        <form method="post" action="{{ url_for('add_song') }}" id="add-song-form">
-            <label for="title">Songtitel:</label>
-            <input type="text" id="title" name="title" required>
-            <label for="artist">Künstler:</label>
-            <input type="text" id="artist" name="artist" required>
-            <button type="submit">Hinzufügen</button>
-        </form>
-    </section>
+        <section id="add-song">
+            <h2>Neuen Song hinzufügen</h2>
+            <form method="post" action="{{ url_for('add_song') }}" id="add-song-form">
+                <label for="title">Songtitel</label>
+                <input type="text" id="title" name="title" placeholder="z. B. Levitating" required>
+                <label for="artist">Künstler</label>
+                <input type="text" id="artist" name="artist" placeholder="z. B. Dua Lipa" required>
+                <button type="submit" class="primary">Song speichern</button>
+            </form>
+        </section>
 
-    <section id="song-list">
-        <h2>Warteschlange</h2>
-        <ul id="songs-container">
-            {# The list will be populated dynamically by JavaScript #}
-            {% if not songs %}
-                <li><p>Die Warteschlange ist leer. Füge den ersten Song hinzu!</p></li>
-            {% endif %}
-        </ul>
-    </section>
+        <section id="song-list">
+            <div class="section-head">
+                <h2>Warteschlange</h2>
+                <p class="muted">Tippen statt scrollen – perfekt fürs Handy.</p>
+            </div>
+            <ul id="songs-container">
+                {# The list will be populated dynamically by JavaScript #}
+                {% if not songs %}
+                    <li class="song-card"><p>Die Warteschlange ist leer. Füge den ersten Song hinzu!</p></li>
+                {% endif %}
+            </ul>
+        </section>
 
-    <section id="genre-vote">
-        <h2>Genre‑Abstimmung</h2>
-        <form method="post" action="{{ url_for('vote_genre') }}" id="genre-form">
-            <label for="genre">Wähle ein Genre:</label>
-            <select name="genre" id="genre" required>
-                {% for genre in genres %}
-                    <option value="{{ genre }}" {% if voted_genre == genre %}selected{% endif %}>{{ genre }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit">Abstimmen</button>
-        </form>
-        <div id="genre-results">
-            {% if total_votes > 0 %}
-                {% for item in genre_data %}
-                    <div class="genre-result {% if item.genre == top_genre %}top-genre{% endif %}">
-                        <span class="genre-name">{{ item.genre }}</span>
-                        <div class="bar-container"><div class="bar" style="width: {{ item.percentage }}%;"></div></div>
-                        <span class="percentage">{{ '%.0f'|format(item.percentage) }}%</span>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>Noch keine Stimmen.</p>
-            {% endif %}
-        </div>
-    </section>
+        <section id="genre-vote" class="muted-block">
+            <h2>Genre‑Abstimmung</h2>
+            <blockquote class="notice">Die Genre‑Abstimmung ruht gerade und ist nur als Referenz hinterlegt.</blockquote>
+            <!--
+            <form method="post" action="{{ url_for('vote_genre') }}" id="genre-form">
+                <label for="genre">Wähle ein Genre:</label>
+                <select name="genre" id="genre" required>
+                    {% for genre in genres %}
+                        <option value="{{ genre }}" {% if voted_genre == genre %}selected{% endif %}>{{ genre }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Abstimmen</button>
+            </form>
+            <div id="genre-results">
+                {% if total_votes > 0 %}
+                    {% for item in genre_data %}
+                        <div class="genre-result {% if item.genre == top_genre %}top-genre{% endif %}">
+                            <span class="genre-name">{{ item.genre }}</span>
+                            <div class="bar-container"><div class="bar" style="width: {{ item.percentage }}%;"></div></div>
+                            <span class="percentage">{{ '%.0f'|format(item.percentage) }}%</span>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>Noch keine Stimmen.</p>
+                {% endif %}
+            </div>
+            -->
+        </section>
 
-    {% if dj_logged_in %}
-    <section id="dj-area">
-        <h2>DJ‑Bereich</h2>
-        <p>Insgesamt {{ songs|length }} Songs in der Warteschlange.</p>
-        <p>Aktuell führendes Genre: {{ top_genre or 'Keine Stimme' }}</p>
-        <div class="dj-table-container">
-        <table class="dj-table">
-            <thead>
-                <tr>
-                    <th>Titel</th>
-                    <th>Künstler</th>
-                    <th>Likes</th>
-                    <th>Zeit</th>
-                    <th>Aktion</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for song in songs %}
-                <tr>
-                    <td data-label="Titel">{{ song.title }}</td>
-                    <td data-label="Künstler">{{ song.artist }}</td>
-                    <td data-label="Likes">{{ song.likes }}</td>
-                    <td data-label="Zeit">{{ song.timestamp }}</td>
-                    <td data-label="Aktion">
-                        <form method="post" action="{{ url_for('remove_song', song_id=song.id) }}" class="remove-form">
-                            <button type="submit">Entfernen</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        </div>
-    </section>
-    {% endif %}
+        {% if dj_logged_in %}
+        <section id="dj-area">
+            <h2>DJ‑Bereich</h2>
+            <p>Insgesamt {{ songs|length }} Songs in der Warteschlange.</p>
+            <div class="dj-table-container">
+            <table class="dj-table">
+                <thead>
+                    <tr>
+                        <th>Titel</th>
+                        <th>Künstler</th>
+                        <th>Likes</th>
+                        <th>Dislikes</th>
+                        <th>Zeit</th>
+                        <th>Aktion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for song in songs %}
+                    <tr>
+                        <td data-label="Titel">{{ song.title }}</td>
+                        <td data-label="Künstler">{{ song.artist }}</td>
+                        <td data-label="Likes">{{ song.likes }}</td>
+                        <td data-label="Dislikes">{{ song.dislikes or 0 }}</td>
+                        <td data-label="Zeit">{{ song.timestamp }}</td>
+                        <td data-label="Aktion">
+                            <form method="post" action="{{ url_for('remove_song', song_id=song.id) }}" class="remove-form">
+                                <button type="submit">Entfernen</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        </section>
+        {% endif %}
 
-    <footer>
-        <p>Freie Software – Viel Spaß beim Feiern!</p>
-    </footer>
+        <footer>
+            <p>Freie Software – Viel Spaß beim Feiern!</p>
+        </footer>
+    </main>
 
     <!-- Dynamisches Aktualisieren ohne Seiten-Reload.  Dieses Skript ruft regelmäßig
          Daten von /data ab und aktualisiert die Warteschlange sowie das
@@ -129,6 +141,7 @@
          aus dem Fluss gerissen wird. -->
     <script>
       const likedSongs = {{ liked_songs | tojson | safe }};
+      const dislikedSongs = {{ disliked_songs | tojson | safe }};
       const djLoggedIn = {{ dj_logged_in | tojson | safe }};
       document.addEventListener('DOMContentLoaded', function() {
         function fetchData() {
@@ -136,7 +149,6 @@
             .then(response => response.json())
             .then(data => {
               updateSongs(data.songs);
-              updateGenres(data.genres, data.total_votes, data.top_genre);
             });
         }
         function updateSongs(songs) {
@@ -144,16 +156,17 @@
           if (!container) return;
           // If there are no songs, show placeholder message
           if (songs.length === 0) {
-            container.innerHTML = '<li><p>Die Warteschlange ist leer. Füge den ersten Song hinzu!</p></li>';
+            container.innerHTML = '<li class="song-card"><p>Die Warteschlange ist leer. Füge den ersten Song hinzu!</p></li>';
             return;
           }
           container.innerHTML = '';
           songs.forEach(song => {
             const li = document.createElement('li');
+            li.className = 'song-card';
             // Info Block
             const info = document.createElement('div');
             info.className = 'song-info';
-            info.innerHTML = '<span class="song-title">' + song.title + '</span> – <span class="song-artist">' + song.artist + '</span>';
+            info.innerHTML = '<span class="song-title">' + song.title + '</span><span class="song-artist">von ' + song.artist + '</span>';
             li.appendChild(info);
             // Actions Block
             const actions = document.createElement('div');
@@ -165,15 +178,32 @@
             likeForm.className = 'like-form inline-form';
             const likeBtn = document.createElement('button');
             likeBtn.type = 'submit';
+            likeBtn.className = 'thumb-btn like-btn';
             // Set button text and class based on whether this song is already liked
             if (likedSongs.includes(song.id)) {
-              likeBtn.textContent = 'Like entfernen (' + song.likes + ')';
-              likeBtn.classList.add('liked');
+              likeBtn.textContent = '👍 ' + song.likes;
+              likeBtn.classList.add('active');
             } else {
-              likeBtn.textContent = 'Like (' + song.likes + ')';
+              likeBtn.textContent = '👍 ' + song.likes;
             }
             likeForm.appendChild(likeBtn);
             actions.appendChild(likeForm);
+            // Dislike form
+            const dislikeForm = document.createElement('form');
+            dislikeForm.method = 'post';
+            dislikeForm.action = '/dislike/' + song.id;
+            dislikeForm.className = 'dislike-form inline-form';
+            const dislikeBtn = document.createElement('button');
+            dislikeBtn.type = 'submit';
+            dislikeBtn.className = 'thumb-btn dislike-btn';
+            if (dislikedSongs.includes(song.id)) {
+              dislikeBtn.textContent = '👎 ' + song.dislikes;
+              dislikeBtn.classList.add('active');
+            } else {
+              dislikeBtn.textContent = '👎 ' + song.dislikes;
+            }
+            dislikeForm.appendChild(dislikeBtn);
+            actions.appendChild(dislikeForm);
             // Remove form if DJ
             if (djLoggedIn) {
               const removeForm = document.createElement('form');
@@ -190,47 +220,42 @@
             container.appendChild(li);
           });
         }
-        function updateGenres(genresData, totalVotes, topGenre) {
-          const resultsDiv = document.getElementById('genre-results');
-          if (!resultsDiv) return;
-          if (totalVotes === 0) {
-            resultsDiv.innerHTML = '<p>Noch keine Stimmen.</p>';
-            return;
-          }
-          let html = '';
-          genresData.forEach(item => {
-            const isTop = item.genre === topGenre;
-            html += '<div class="genre-result ' + (isTop ? 'top-genre' : '') + '">';
-            html += '<span class="genre-name">' + item.genre + '</span>';
-            html += '<div class="bar-container"><div class="bar" style="width:' + item.percentage + '%;"></div></div>';
-            html += '<span class="percentage">' + Math.round(item.percentage) + '%</span>';
-            html += '</div>';
-          });
-          resultsDiv.innerHTML = html;
-        }
-        // Submit handlers for like, remove and genre forms
+        // Submit handlers for like, dislike and remove forms
         document.addEventListener('submit', function(e) {
           const form = e.target;
-          if (form.classList.contains('like-form') || form.classList.contains('remove-form') || form.id === 'genre-form') {
+          if (form.classList.contains('like-form') || form.classList.contains('dislike-form') || form.classList.contains('remove-form')) {
             e.preventDefault();
             const formData = new FormData(form);
             fetch(form.action, {
               method: form.method,
               body: formData
             }).then(() => {
-              // For like forms, update likedSongs array to disable button until next refresh
-              if (form.classList.contains('like-form')) {
-                const match = form.action.match(/\/like\/(\d+)/);
-                if (match) {
-                  const id = parseInt(match[1], 10);
-                  // Toggle the presence of id in likedSongs
-                  const index = likedSongs.indexOf(id);
-                  if (index !== -1) {
-                    // Already liked: remove from the list
-                    likedSongs.splice(index, 1);
+              const likeMatch = form.action.match(/\/like\/(\d+)/);
+              const dislikeMatch = form.action.match(/\/dislike\/(\d+)/);
+              const id = likeMatch ? parseInt(likeMatch[1], 10) : dislikeMatch ? parseInt(dislikeMatch[1], 10) : null;
+              if (id !== null) {
+                if (form.classList.contains('like-form')) {
+                  const likedIndex = likedSongs.indexOf(id);
+                  if (likedIndex !== -1) {
+                    likedSongs.splice(likedIndex, 1);
                   } else {
-                    // Not yet liked: add to the list
                     likedSongs.push(id);
+                    const dislikedIndex = dislikedSongs.indexOf(id);
+                    if (dislikedIndex !== -1) {
+                      dislikedSongs.splice(dislikedIndex, 1);
+                    }
+                  }
+                }
+                if (form.classList.contains('dislike-form')) {
+                  const dislikedIndex = dislikedSongs.indexOf(id);
+                  if (dislikedIndex !== -1) {
+                    dislikedSongs.splice(dislikedIndex, 1);
+                  } else {
+                    dislikedSongs.push(id);
+                    const likedIndex = likedSongs.indexOf(id);
+                    if (likedIndex !== -1) {
+                      likedSongs.splice(likedIndex, 1);
+                    }
                   }
                 }
               }

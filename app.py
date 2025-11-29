@@ -97,6 +97,7 @@ def index():
     # List of song IDs this user has already liked (stored in session).  Used to
     # disable like buttons so each person can only like a song once.
     liked_songs = session.get('liked_songs', [])
+    disliked_songs = session.get('disliked_songs', [])
     # Compute genre vote data for initial rendering
     total_votes = sum(genre_votes.values())
     genre_data = []
@@ -112,6 +113,7 @@ def index():
         songs=sorted_songs,
         dj_logged_in=session.get('dj_logged_in', False),
         liked_songs=liked_songs,
+        disliked_songs=disliked_songs,
         genres=genres,
         genre_data=genre_data,
         total_votes=total_votes,
@@ -136,6 +138,7 @@ def add_song():
         'title': title,
         'artist': artist,
         'likes': 0,
+        'dislikes': 0,
         # Timestamp for when the song was added; used in the DJ interface.
         'timestamp': datetime.now().strftime('%H:%M:%S'),
     }
@@ -154,6 +157,7 @@ def toggle_like(song_id: int):
     session under 'liked_songs'.
     """
     liked = session.get('liked_songs', [])
+    disliked = session.get('disliked_songs', [])
     # Find the song by ID
     for song in songs:
         if song['id'] == song_id:
@@ -162,14 +166,50 @@ def toggle_like(song_id: int):
                 if song['likes'] > 0:
                     song['likes'] -= 1
                 liked.remove(song_id)
-                flash('Dein Like wurde entfernt.', category='success')
+                flash('Dein Daumen hoch wurde entfernt.', category='success')
             else:
                 # Add a like to this song
                 song['likes'] += 1
                 liked.append(song_id)
-                flash('Like abgegeben!', category='success')
+                # Remove a potential dislike to keep the states exclusive
+                if song_id in disliked:
+                    if song['dislikes'] > 0:
+                        song['dislikes'] -= 1
+                    disliked.remove(song_id)
+                flash('Daumen hoch abgegeben!', category='success')
             break
     session['liked_songs'] = liked
+    session['disliked_songs'] = disliked
+    return redirect(url_for('index'))
+
+
+@app.route('/dislike/<int:song_id>', methods=['POST'])
+def toggle_dislike(song_id: int):
+    """
+    Toggle a dislike on a song.  A dislike removes a previous like from the same
+    user to avoid double‑voting.  Disliked song IDs are stored in the session.
+    """
+    liked = session.get('liked_songs', [])
+    disliked = session.get('disliked_songs', [])
+    for song in songs:
+        if song['id'] == song_id:
+            if song_id in disliked:
+                if song['dislikes'] > 0:
+                    song['dislikes'] -= 1
+                disliked.remove(song_id)
+                flash('Dein Daumen runter wurde entfernt.', category='success')
+            else:
+                song['dislikes'] += 1
+                disliked.append(song_id)
+                # Remove like if it exists to keep states exclusive
+                if song_id in liked:
+                    if song['likes'] > 0:
+                        song['likes'] -= 1
+                    liked.remove(song_id)
+                flash('Daumen runter abgegeben.', category='success')
+            break
+    session['liked_songs'] = liked
+    session['disliked_songs'] = disliked
     return redirect(url_for('index'))
 
 
@@ -195,6 +235,7 @@ def data():
             'title': s['title'],
             'artist': s['artist'],
             'likes': s['likes'],
+            'dislikes': s.get('dislikes', 0),
             'timestamp': s.get('timestamp', ''),
         }
         for s in sorted_songs
