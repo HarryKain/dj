@@ -6,6 +6,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>DJ‑Login</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
@@ -17,24 +18,26 @@
         </nav>
     </header>
 
-    <!-- Flash‑Nachrichten anzeigen -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <ul class="flash-messages">
-          {% for category, message in messages %}
-            <li class="{{ category }}">{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
+    <main class="page">
+        <!-- Flash‑Nachrichten anzeigen -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class="flash-messages">
+              {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
 
-    <section id="login-form">
-        <h2>Passwort eingeben</h2>
-        <form method="post" action="{{ url_for('login') }}">
-            <label for="password">Passwort:</label>
-            <input type="password" id="password" name="password" required>
-            <button type="submit">Einloggen</button>
-        </form>
-    </section>
+        <section id="login-form">
+            <h2>Passwort eingeben</h2>
+            <form method="post" action="{{ url_for('login') }}">
+                <label for="password">Passwort:</label>
+                <input type="password" id="password" name="password" required>
+                <button type="submit" class="primary">Einloggen</button>
+            </form>
+        </section>
+    </main>
 </body>
 </html>

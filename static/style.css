@@ -1,347 +1,323 @@
 /*
- * Einfache Styles für die Party‑Wunschliste.
- */
-
-/*
- * Dark‑mode style with purple/pink accents.  Defines CSS variables for colors
- * and uses responsive design rules for small screens.  Font stack picks modern
- * system fonts and falls back to sans‑serif.
+ * Mobile-first, professional styling for the Party-Wunschliste.
+ * Compact controls, clear spacing, and thumb buttons for like/dislike.
  */
 
 :root {
-    --bg-color: #1a192a;        /* dunkler Hintergrund */
-    --card-bg: #24243c;         /* dunklere Kartenfarbe */
-    --text-color: #e0e0e6;      /* helle Schrift */
-    --accent: #a855f7;          /* lila Akzent */
-    --accent-secondary: #ec4899; /* pinker Akzent */
-    --button-hover: #7c3aed;    /* dunkleres Lila für Hover */
-    --error-bg: #b91c1c;
-    --error-text: #f9fafb;
-    --success-bg: #15803d;
-    --success-text: #f9fafb;
+    --bg: #0b1224;
+    --panel: rgba(255, 255, 255, 0.06);
+    --panel-strong: rgba(255, 255, 255, 0.1);
+    --text: #e9edf5;
+    --muted: #9aa4bf;
+    --accent: #1dd1a1;
+    --accent-strong: #12b886;
+    --danger: #f87171;
+    --danger-strong: #ef4444;
+    --border: rgba(255, 255, 255, 0.12);
+    --shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+    --radius: 14px;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
     margin: 0;
-    padding: 0;
-    background-color: var(--bg-color);
-    color: var(--text-color);
+    font-family: "SF Pro Display", "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: radial-gradient(circle at 20% 20%, rgba(29, 209, 161, 0.08), transparent 30%),
+                radial-gradient(circle at 80% 0%, rgba(59, 130, 246, 0.08), transparent 25%),
+                linear-gradient(180deg, #0a1020 0%, #0c1226 60%, #0a1224 100%);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
 }
 
 header {
-    background-color: var(--card-bg);
-    color: var(--text-color);
-    padding: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(12px);
+    background: rgba(11, 18, 36, 0.8);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.25rem;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    justify-content: space-between;
 }
 
-header h1 {
+.brand h1 {
     margin: 0;
-    font-size: 1.5em;
+    font-size: 1.4rem;
+    letter-spacing: -0.01em;
 }
 
-header nav a,
-header nav form button {
+.tagline {
+    margin: 0.2rem 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+nav a,
+nav button {
+    font: inherit;
     color: var(--accent);
-    text-decoration: none;
-    margin-left: 1rem;
     background: transparent;
-    border: none;
+    border: 1px solid var(--border);
+    padding: 0.5rem 0.8rem;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 1em;
-    transition: color 0.2s ease;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
 }
 
-header nav form button:hover,
-header nav a:hover {
-    color: var(--accent-secondary);
+nav a:hover,
+nav button:hover {
+    border-color: var(--accent);
+    background: rgba(29, 209, 161, 0.08);
+}
+
+.page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 section {
-    margin: 1.5rem;
-    background: var(--card-bg);
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.1rem;
+    box-shadow: var(--shadow);
 }
 
 section h2 {
-    margin-top: 0;
+    margin: 0 0 0.35rem;
+    font-size: 1.1rem;
+}
+
+.section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+}
+
+.muted {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.muted-block {
+    border: 1px dashed var(--border);
+}
+
+.notice {
+    margin: 0.6rem 0 0;
+    padding: 0.75rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    color: var(--muted);
 }
 
 label {
     display: block;
-    margin-top: 0.75rem;
+    margin: 0.7rem 0 0.3rem;
+    color: var(--muted);
+    font-size: 0.95rem;
 }
 
 input[type="text"],
-input[type="password"] {
+input[type="password"],
+select {
     width: 100%;
-    padding: 0.6rem;
-    margin-top: 0.3rem;
-    background-color: #2c2c46;
-    border: 1px solid #3f3f5e;
-    border-radius: 5px;
-    color: var(--text-color);
+    padding: 0.75rem 0.85rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    font-size: 1rem;
 }
 
 button {
-    margin-top: 1rem;
-    padding: 0.5rem 1rem;
-    background-color: var(--accent);
-    color: var(--text-color);
+    width: 100%;
+    padding: 0.9rem;
+    border-radius: 12px;
     border: none;
-    border-radius: 5px;
+    font: inherit;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: transform 0.1s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+button:active {
+    transform: scale(0.98);
 }
 
-button:hover:not(:disabled) {
-    background-color: var(--button-hover);
+button.primary {
+    background: linear-gradient(120deg, var(--accent-strong), var(--accent));
+    color: #0b1224;
+    font-weight: 700;
+    box-shadow: 0 10px 30px rgba(18, 184, 134, 0.35);
+}
+
+button.primary:hover {
+    background: linear-gradient(120deg, var(--accent), var(--accent-strong));
+}
+
+button.ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
 }
 
 ul {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
-li {
+.song-card {
+    background: var(--panel-strong);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 0.95rem;
+    margin-bottom: 0.65rem;
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid #3f3f5e;
+    flex-direction: column;
+    gap: 0.7rem;
+    box-shadow: var(--shadow);
 }
 
 .song-info {
-    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.song-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.song-artist {
+    color: var(--muted);
+    font-size: 0.95rem;
 }
 
 .song-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.thumb-btn {
     display: flex;
-    gap: 0.5em;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    font-weight: 700;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text);
 }
 
-/* Responsive adjustments for small screens */
-@media (max-width: 600px) {
-    section {
-        margin: 1rem;
-        padding: 1rem;
-    }
-    .song-actions {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-    button {
-        width: 100%;
-    }
-
-    /* Listeinträge untereinander für kleine Bildschirme */
-    li {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .song-info {
-        margin-bottom: 0.3rem;
-    }
-
-    /* Größere Schriftarten und Buttons für bessere Lesbarkeit im Hochformat */
-    body {
-        font-size: 1.1em;
-    }
-    header h1 {
-        font-size: 1.5em;
-    }
-    section h2 {
-        font-size: 1.3em;
-    }
-    .song-info {
-        font-size: 1.1em;
-    }
-    input[type="text"],
-    input[type="password"] {
-        font-size: 1.1em;
-    }
-    button {
-        font-size: 1.1em;
-        padding: 0.6rem 1.2rem;
-    }
+.like-btn.active {
+    border-color: rgba(29, 209, 161, 0.6);
+    background: rgba(29, 209, 161, 0.12);
+    color: var(--accent);
 }
 
-.inline-form {
-    display: inline;
+.dislike-btn {
+    border-color: rgba(248, 113, 113, 0.5);
+}
+
+.dislike-btn.active {
+    border-color: rgba(239, 68, 68, 0.7);
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--danger);
+}
+
+.remove-form button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    color: var(--muted);
 }
 
 .flash-messages {
-    list-style: none;
-    padding: 0;
-    margin: 1em;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .flash-messages li {
-    padding: 0.5em;
-    border-radius: 3px;
-    margin-bottom: 0.5em;
+    padding: 0.8rem 0.9rem;
+    border-radius: 12px;
+    background: var(--panel-strong);
+    border: 1px solid var(--border);
 }
 
-/* Flash messages in dark mode */
 .flash-messages li.success {
-    background-color: var(--success-bg);
-    color: var(--success-text);
-    border: 1px solid var(--success-bg);
+    border-color: rgba(29, 209, 161, 0.5);
+    color: var(--accent);
 }
 
 .flash-messages li.error {
-    background-color: var(--error-bg);
-    color: var(--error-text);
-    border: 1px solid var(--error-bg);
+    border-color: rgba(248, 113, 113, 0.6);
+    color: var(--danger);
 }
 
-footer {
-    text-align: center;
-    padding: 1em;
-    font-size: 0.85em;
-    color: #666;
+#dj-area {
+    border: 1px solid rgba(29, 209, 161, 0.3);
 }
 
-/*
- * Zusätzliche Styles für die Genre‑Abstimmung und DJ‑Ansicht.
- * Diese sorgen für übersichtliche Balkendiagramme, eine responsive Tabelle
- * und heben das führende Genre farblich hervor.
- */
-
-/* Container für Abstimmungs­ergebnisse */
-#genre-results {
-    margin-top: 1rem;
-}
-
-/* Einzelne Zeile eines Genre‑Ergebnisses */
-.genre-result {
-    display: flex;
-    align-items: center;
-    margin-bottom: 0.5rem;
-}
-
-/* Name des Genres */
-.genre-result .genre-name {
-    width: 25%;
-    font-weight: 600;
-}
-
-/* Hintergrundbalken für die Prozentanzeige */
-.bar-container {
-    flex-grow: 1;
-    height: 0.6rem;
-    background-color: #3f3f5e;
-    border-radius: 4px;
-    margin: 0 0.5rem;
-    overflow: hidden;
-}
-
-/* Gefüllter Balken, standardmäßig in der Akzentfarbe */
-.bar {
-    height: 100%;
-    background-color: var(--accent);
-    border-radius: 4px;
-}
-
-/* Prozentzahl rechtsbündig */
-.genre-result .percentage {
-    width: 12%;
-    text-align: right;
-    font-size: 0.9em;
-}
-
-/* Hervorhebung für das Top‑Genre: anderer Balken‑ und Textfarbton */
-.genre-result.top-genre .bar {
-    background-color: var(--accent-secondary);
-}
-
-.genre-result.top-genre .genre-name {
-    color: var(--accent-secondary);
-}
-
-/* Tabelle im DJ‑Bereich */
 .dj-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
 }
 
 .dj-table th,
 .dj-table td {
-    padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid #3f3f5e;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
 }
 
 .dj-table th {
-    text-align: left;
-    background-color: #2c2c46;
-    color: var(--accent);
+    color: var(--muted);
     font-weight: 600;
 }
 
 .dj-table tr:hover {
-    background-color: #2a2a3c;
+    background: rgba(255, 255, 255, 0.03);
 }
 
-/* Buttons im DJ‑Bereich etwas kompakter */
-.dj-table button {
-    padding: 0.3rem 0.6rem;
-    font-size: 0.9em;
+footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    padding: 1rem 0 0.4rem;
 }
 
-/* Stil für bereits gelikte Buttons */
-button.liked {
-    background-color: var(--accent-secondary);
-    color: var(--text-color);
-}
-
-button.liked:hover:not(:disabled) {
-    background-color: var(--accent);
-}
-
-/* Responsive Tabellenlayout für schmale Bildschirme */
-@media (max-width: 600px) {
-    .dj-table thead {
-        display: none;
+@media (min-width: 700px) {
+    header {
+        border-radius: 0 0 18px 18px;
     }
-    .dj-table,
-    .dj-table tbody,
-    .dj-table tr,
-    .dj-table td {
-        display: block;
-        width: 100%;
+    section {
+        padding: 1.35rem;
     }
-    .dj-table tr {
-        margin-bottom: 1rem;
-        border: 1px solid #3f3f5e;
-        border-radius: 4px;
-        padding: 0.5rem;
-    }
-    .dj-table td {
-        border-bottom: none;
-        padding: 0.4rem 0;
-    }
-    .dj-table td::before {
-        content: attr(data-label);
-        display: block;
-        font-weight: 600;
-        margin-bottom: 0.25rem;
-        color: var(--accent);
+    .song-card {
+        padding: 1.05rem 1.1rem;
     }
 }

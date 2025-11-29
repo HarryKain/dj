@@ -161,6 +161,7 @@ def toggle_like(song_id: int):
     # Find the song by ID
     for song in songs:
         if song['id'] == song_id:
+            song.setdefault('dislikes', 0)
             if song_id in liked:
                 # User has already liked this song – remove the like
                 if song['likes'] > 0:
@@ -193,6 +194,8 @@ def toggle_dislike(song_id: int):
     disliked = session.get('disliked_songs', [])
     for song in songs:
         if song['id'] == song_id:
+            song.setdefault('likes', 0)
+            song.setdefault('dislikes', 0)
             if song_id in disliked:
                 if song['dislikes'] > 0:
                     song['dislikes'] -= 1
