@@ -1,0 +1,81 @@
+<!--
+  Hauptseite für die Party‑Wunschliste.
+  Gäste können Songs hinzufügen und liken.  Wenn der DJ eingeloggt ist,
+  erscheinen zusätzliche Schaltflächen zum Entfernen von Songs.
+-->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Party‑Wunschliste</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Party‑Musikwünsche</h1>
+        <nav>
+            {% if dj_logged_in %}
+                <form method="post" action="{{ url_for('logout') }}" style="display:inline;">
+                    <button type="submit">DJ abmelden</button>
+                </form>
+            {% else %}
+                <a href="{{ url_for('login') }}">DJ‑Login</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <!-- Flash‑Nachrichten anzeigen -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flash-messages">
+          {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <section id="add-song">
+        <h2>Neuen Song hinzufügen</h2>
+        <form method="post" action="{{ url_for('add_song') }}">
+            <label for="title">Songtitel:</label>
+            <input type="text" id="title" name="title" required>
+            <label for="artist">Künstler:</label>
+            <input type="text" id="artist" name="artist" required>
+            <button type="submit">Hinzufügen</button>
+        </form>
+    </section>
+
+    <section id="song-list">
+        <h2>Warteschlange</h2>
+        {% if songs %}
+            <ul>
+            {% for song in songs %}
+                <li>
+                    <div class="song-info">
+                        <span class="song-title">{{ song.title }}</span> –
+                        <span class="song-artist">{{ song.artist }}</span>
+                    </div>
+                    <div class="song-actions">
+                        <form method="post" action="{{ url_for('like_song', song_id=song.id) }}" class="inline-form">
+                            <button type="submit">Gefällt mir ({{ song.likes }})</button>
+                        </form>
+                        {% if dj_logged_in %}
+                            <form method="post" action="{{ url_for('remove_song', song_id=song.id) }}" class="inline-form">
+                                <button type="submit">Entfernen</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>Die Warteschlange ist leer. Füge den ersten Song hinzu!</p>
+        {% endif %}
+    </section>
+
+    <footer>
+        <p>Freie Software – Viel Spaß beim Feiern!</p>
+    </footer>
+</body>
+</html>

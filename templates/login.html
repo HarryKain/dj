@@ -1,0 +1,40 @@
+<!--
+  Login‑Seite für den DJ.  Hier kann das Passwort eingegeben werden, um den
+  Administrationsmodus zu aktivieren.
+-->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>DJ‑Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>DJ‑Login</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">Zurück zur Wunschliste</a>
+        </nav>
+    </header>
+
+    <!-- Flash‑Nachrichten anzeigen -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flash-messages">
+          {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <section id="login-form">
+        <h2>Passwort eingeben</h2>
+        <form method="post" action="{{ url_for('login') }}">
+            <label for="password">Passwort:</label>
+            <input type="password" id="password" name="password" required>
+            <button type="submit">Einloggen</button>
+        </form>
+    </section>
+</body>
+</html>
