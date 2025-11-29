@@ -49,7 +49,7 @@
     <section id="song-list">
         <h2>Warteschlange</h2>
         {% if songs %}
-            <ul>
+            <ul id="songs-container">
             {% for song in songs %}
                 <li>
                     <div class="song-info">
@@ -57,8 +57,13 @@
                         <span class="song-artist">{{ song.artist }}</span>
                     </div>
                     <div class="song-actions">
+                        {# Disable like button if this user already liked the song #}
                         <form method="post" action="{{ url_for('like_song', song_id=song.id) }}" class="inline-form">
-                            <button type="submit">Gefällt mir ({{ song.likes }})</button>
+                            {% if song.id in liked_songs %}
+                                <button type="submit" disabled>Gefällt mir ({{ song.likes }})</button>
+                            {% else %}
+                                <button type="submit">Gefällt mir ({{ song.likes }})</button>
+                            {% endif %}
                         </form>
                         {% if dj_logged_in %}
                             <form method="post" action="{{ url_for('remove_song', song_id=song.id) }}" class="inline-form">
@@ -77,5 +82,22 @@
     <footer>
         <p>Freie Software – Viel Spaß beim Feiern!</p>
     </footer>
+
+    <!-- Auto-refresh: poll the server every few seconds for updates.  This JS
+         reloads the page after a short interval so new songs and updated like
+         counts appear automatically.  If you prefer to avoid full page reloads,
+         you could fetch JSON from /data and update the DOM directly. -->
+    <script>
+      // Reload the page every 8 seconds to reflect changes from other users.
+      setInterval(function() {
+        // Only reload if the user is not currently submitting a form (to avoid
+        // interrupting form submissions).  We check whether there are any
+        // pending fetches or focused elements; this is a simple heuristic.
+        const activeElement = document.activeElement;
+        if (!activeElement || activeElement.tagName !== 'INPUT') {
+          location.reload();
+        }
+      }, 8000);
+    </script>
 </body>
 </html>

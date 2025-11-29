@@ -35,6 +35,7 @@ from flask import (
     url_for,
     session,
     flash,
+    jsonify,
 )
 
 
@@ -74,10 +75,14 @@ def index():
     # earlier if likes tie).  This ensures the most liked song appears at the
     # top of the queue.
     sorted_songs = sorted(songs, key=lambda s: (-s['likes'], s['id']))
+    # List of song IDs this user has already liked (stored in session).  Used to
+    # disable like buttons so each person can only like a song once.
+    liked_songs = session.get('liked_songs', [])
     return render_template(
         'index.html',
         songs=sorted_songs,
         dj_logged_in=session.get('dj_logged_in', False),
+        liked_songs=liked_songs,
     )
 
 
@@ -105,9 +110,19 @@ def add_song():
 
 @app.route('/like/<int:song_id>', methods=['POST'])
 def like_song(song_id: int):
+    # Ensure each user can like a song only once.  We keep track of liked IDs in
+    # the session.  If the song hasn't been liked by this user, increment
+    # likes and record the like; otherwise do nothing.
+    liked = session.get('liked_songs', [])
     for song in songs:
         if song['id'] == song_id:
-            song['likes'] += 1
+            if song_id not in liked:
+                song['likes'] += 1
+                liked.append(song_id)
+                session['liked_songs'] = liked
+            else:
+                # Optional: flash a message to inform the user
+                flash('Du hast diesen Song bereits geliked.', category='error')
             break
     return redirect(url_for('index'))
 
@@ -119,6 +134,16 @@ def remove_song(song_id: int):
     songs = [s for s in songs if s['id'] != song_id]
     flash('Song aus der Warteschlange entfernt.', category='success')
     return redirect(url_for('index'))
+
+
+# Expose the current queue as JSON for client-side refreshing.
+# Returns a list of song objects sorted by likes and id.
+@app.route('/data')
+def data():
+    sorted_songs = sorted(songs, key=lambda s: (-s['likes'], s['id']))
+    # Do not expose sensitive session data.  The list includes each song's id,
+    # title, artist and like count.
+    return jsonify(sorted_songs)
 
 
 @app.route('/login', methods=['GET', 'POST'])
