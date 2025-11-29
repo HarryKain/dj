@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import functools
 from typing import List, Dict
+from datetime import datetime
 
 from flask import (
     Flask,
@@ -51,6 +52,25 @@ app.config['SECRET_KEY'] = 'replace-with-a-random-secret'
 # In a real application you might use a database instead of an in‑memory list.
 songs: List[Dict] = []
 
+# List of genres available for voting and a dict to track vote counts.  Feel free
+# to modify the genre names to suit your party.
+genres: List[str] = [
+    "Pop",
+    "Rock",
+    "Hip-Hop",
+    "Elektronisch",
+    "Dance",
+    "Schlager",
+    "R&B",
+    "Reggae",
+    "Latin",
+    "Alternative",
+]
+
+# Initialize vote counts for each genre.  When users vote, the counts are
+# incremented or decremented accordingly.
+genre_votes: Dict[str, int] = {genre: 0 for genre in genres}
+
 
 def get_next_id() -> int:
     """Return the next song id based on the highest existing id."""
@@ -71,18 +91,32 @@ def require_dj(view):
 
 @app.route('/')
 def index():
-    # Sort songs by likes descending, then by id ascending (to keep older songs
-    # earlier if likes tie).  This ensures the most liked song appears at the
-    # top of the queue.
+    # Sort songs by likes descending, then by id ascending.  This ensures the
+    # most liked song appears at the top of the queue.
     sorted_songs = sorted(songs, key=lambda s: (-s['likes'], s['id']))
     # List of song IDs this user has already liked (stored in session).  Used to
     # disable like buttons so each person can only like a song once.
     liked_songs = session.get('liked_songs', [])
+    # Compute genre vote data for initial rendering
+    total_votes = sum(genre_votes.values())
+    genre_data = []
+    for genre in genres:
+        count = genre_votes.get(genre, 0)
+        percentage = (count / total_votes * 100) if total_votes > 0 else 0
+        genre_data.append({'genre': genre, 'votes': count, 'percentage': percentage})
+    top_genre = None
+    if total_votes > 0:
+        top_genre = max(genre_votes.items(), key=lambda item: item[1])[0]
     return render_template(
         'index.html',
         songs=sorted_songs,
         dj_logged_in=session.get('dj_logged_in', False),
         liked_songs=liked_songs,
+        genres=genres,
+        genre_data=genre_data,
+        total_votes=total_votes,
+        top_genre=top_genre,
+        voted_genre=session.get('voted_genre'),
     )
 
 
@@ -102,6 +136,8 @@ def add_song():
         'title': title,
         'artist': artist,
         'likes': 0,
+        # Timestamp for when the song was added; used in the DJ interface.
+        'timestamp': datetime.now().strftime('%H:%M:%S'),
     }
     songs.append(song)
     flash('Song hinzugefügt!', category='success')
@@ -109,21 +145,31 @@ def add_song():
 
 
 @app.route('/like/<int:song_id>', methods=['POST'])
-def like_song(song_id: int):
-    # Ensure each user can like a song only once.  We keep track of liked IDs in
-    # the session.  If the song hasn't been liked by this user, increment
-    # likes and record the like; otherwise do nothing.
+def toggle_like(song_id: int):
+    """
+    Toggle a like on a song.  Users can like as many different songs as they
+    want but only once per song.  If they have already liked this song,
+    clicking again will remove their like (dislike) and decrement the song's
+    like counter.  The list of song IDs a user has liked is stored in the
+    session under 'liked_songs'.
+    """
     liked = session.get('liked_songs', [])
+    # Find the song by ID
     for song in songs:
         if song['id'] == song_id:
-            if song_id not in liked:
+            if song_id in liked:
+                # User has already liked this song – remove the like
+                if song['likes'] > 0:
+                    song['likes'] -= 1
+                liked.remove(song_id)
+                flash('Dein Like wurde entfernt.', category='success')
+            else:
+                # Add a like to this song
                 song['likes'] += 1
                 liked.append(song_id)
-                session['liked_songs'] = liked
-            else:
-                # Optional: flash a message to inform the user
-                flash('Du hast diesen Song bereits geliked.', category='error')
+                flash('Like abgegeben!', category='success')
             break
+    session['liked_songs'] = liked
     return redirect(url_for('index'))
 
 
@@ -141,9 +187,41 @@ def remove_song(song_id: int):
 @app.route('/data')
 def data():
     sorted_songs = sorted(songs, key=lambda s: (-s['likes'], s['id']))
-    # Do not expose sensitive session data.  The list includes each song's id,
-    # title, artist and like count.
-    return jsonify(sorted_songs)
+    # Build a serialisable response.  For each song, include id, title, artist,
+    # likes, and timestamp.
+    song_list = [
+        {
+            'id': s['id'],
+            'title': s['title'],
+            'artist': s['artist'],
+            'likes': s['likes'],
+            'timestamp': s.get('timestamp', ''),
+        }
+        for s in sorted_songs
+    ]
+    # Prepare genre vote data
+    total_votes = sum(genre_votes.values())
+    # To avoid division by zero, handle case when total_votes is 0
+    genre_data = []
+    for genre in genres:
+        count = genre_votes.get(genre, 0)
+        percentage = (count / total_votes * 100) if total_votes > 0 else 0
+        genre_data.append({
+            'genre': genre,
+            'votes': count,
+            'percentage': percentage,
+        })
+    # Determine the top genre(s)
+    top_genre = None
+    if total_votes > 0:
+        top_genre = max(genre_votes.items(), key=lambda item: item[1])[0]
+    response = {
+        'songs': song_list,
+        'genres': genre_data,
+        'total_votes': total_votes,
+        'top_genre': top_genre,
+    }
+    return jsonify(response)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -164,6 +242,30 @@ def login():
 def logout():
     session.pop('dj_logged_in', None)
     flash('Abgemeldet.', category='success')
+    return redirect(url_for('index'))
+
+
+@app.route('/vote', methods=['POST'])
+def vote_genre():
+    """
+    Handle genre voting.  Users can vote for one genre at a time.  If they have
+    previously voted for another genre, that vote is removed before applying the new one.
+    The selected genre is stored in the session under 'voted_genre'.
+    """
+    selected = request.form.get('genre')
+    if not selected or selected not in genres:
+        flash('Bitte wähle ein gültiges Genre aus.', category='error')
+        return redirect(url_for('index'))
+    # Retrieve the previously voted genre for this session
+    previous = session.get('voted_genre')
+    # Remove previous vote
+    if previous and previous in genre_votes and genre_votes[previous] > 0:
+        genre_votes[previous] -= 1
+    # Add new vote
+    genre_votes[selected] += 1
+    # Store the new selection in the session
+    session['voted_genre'] = selected
+    flash(f'Deine Stimme für {selected} wurde gezählt!', category='success')
     return redirect(url_for('index'))
 
 
