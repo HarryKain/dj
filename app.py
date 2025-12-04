@@ -1,27 +1,3 @@
-"""
-This Flask application provides a simple party‑playlist manager.  Guests can
-submit songs with a title and artist, other guests can like songs, and the DJ can
-mark songs as played (removing them from the queue).  The queue is stored in
-memory; persisting to disk would require additional work.
-
-Endpoints
----------
-GET `/`                     → Show the queue and song submission form.
-POST `/add`                 → Add a new song to the queue.
-POST `/like/<int:song_id>`   → Increment the like counter on the song with the
-                              given ID.
-GET `/login`                → Display a login form for the DJ.
-POST `/login`               → Process the DJ login, setting a session flag when
-                              the password matches 2911.
-POST `/logout`              → Remove the DJ session flag.
-POST `/remove/<int:song_id>` → Remove a song (DJ only).
-
-To run the app locally:
-    pip install -r requirements.txt
-    flask run
-
-"""
-
 from __future__ import annotations
 
 import functools
